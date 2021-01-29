@@ -1,0 +1,101 @@
+library IEEE;
+ use IEEE.STD_LOGIC_1164.ALL;
+
+ entity comparator8bit is
+ port ( D: in bit_vector(7 downto 0);
+         F: in bit_vector(7 downto 0);
+         Lt: out bit; 
+         Et: out bit;
+         Gt: out bit);
+ end comparator8bit; 
+
+ entity comparator1bit is
+ port ( A: in bit; 
+         B: in bit;
+         L: out bit; 
+         E: out bit; 
+         G: out bit); 
+ end comparator1bit; 
+
+ entity not_gate is
+    port(I : in bit; O : out bit);
+    end not_gate;
+ architecture behav of not_gate is
+    begin
+    O <= not(I);
+ end behav;
+
+ entity and_gate is
+    port(I1, I2:in bit;
+    O:out bit);
+ end and_gate;
+ architecture behav of and_gate is
+    begin
+    O <= (I1 and I2) after 10 ns;
+ end behav;
+
+ entity exnor_gate is
+    port(I1, I2:in bit;
+    O:out bit);
+ end exnor_gate;
+ architecture behav of exnor_gate is
+    begin
+    O <= (I1 xnor I2);
+ end behav;
+
+ architecture structure_view of comparator1bit is
+ component not_gate
+    port(I : in bit; O : out bit);
+ end component;
+ component and_gate
+    port(I1,I2 : in bit; O: out bit);
+ end component;
+ component exnor_gate
+    port(I1,I2 : in bit; O: out bit);
+ end component;
+ signal x,y : bit;
+ begin
+ G1: not_gate port map (A,x);
+ G2: not_gate port map (B,y);
+ G3: and_gate port map (y,A,G);
+ G4: and_gate port map (x,B,L);
+ G5: exnor_gate port map (A,B,E);
+ end structure_view;
+
+ architecture struct of comparator8bit is
+ component comparator1bit
+    port ( A: in bit; 
+         B: in bit;
+         L: out bit; 
+         E: out bit;
+         G: out bit); 
+ end component;
+ signal equal: bit_vector(7 downto 0); 
+ begin   
+
+ U1: comparator1bit port map (A=>D(0),B=>F(0)); 
+ U2: comparator1bit port map (A=>D(1),B=>F(1));
+ U3: comparator1bit port map (A=>D(2),B=>F(2));
+ U4: comparator1bit port map (A=>D(3),B=>F(3)); 
+ U5: comparator1bit port map (A=>D(4),B=>F(4));
+ U6: comparator1bit port map (A=>D(5),B=>F(5));
+ U7: comparator1bit port map (A=>D(6),B=>F(6));
+ U8: comparator1bit port map (A=>D(7),B=>F(7));
+
+
+ process
+    begin
+    for I in 7 to 0 loop
+        if D(I)>F(I) then
+        Gt<='1';
+        elseif F(I)>D(I) then
+        Lt<='1';
+        else
+        equal(I)<='1';
+        end if;
+        if equal='11111111' then
+        Et<='1';
+        end if;
+        end loop;
+    end process;
+ end struct;
